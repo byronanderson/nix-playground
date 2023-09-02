@@ -29,6 +29,7 @@
         inherit pkgs;
         module = config pkgs;
       };
+      elixir = pkgs.beam.packages.erlang.elixir;
     in {
       checks = {
         # Run `nix flake check .` to verify that your config is not broken
@@ -46,7 +47,7 @@
       devShells = {
         default = pkgs.devshell.mkShell {
           imports = [];
-          packages = [ pkgs.gnumake nvim ];
+          packages = [ pkgs.gnumake nvim elixir ];
         };
       };
 
