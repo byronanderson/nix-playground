@@ -91,6 +91,7 @@ config = {
         ];
     extraPlugins = [
       pkgs.vimPlugins.vim-fugitive
+      pkgs.vimPlugins.vim-vinegar
     ];
 };
 
