@@ -76,8 +76,12 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
     normal."<C-k>" = "<cmd>:wincmd k<cr>";
     normal."<C-l>" = "<cmd>:wincmd l<cr>";
 
+    # fuzzy finders
+    normal."<leader>f" = "<cmd>:Telescope git_files<cr>";
+    normal."<leader>F" = "<cmd>:Telescope live_grep<cr>";
+
     # force a format
-    normal."<leader>f" = "<cmd>lua vim.lsp.buf.format({ async = false })<cr>";
+    normal."<leader>d" = "<cmd>lua vim.lsp.buf.format({ async = false })<cr>";
     normalVisualOp.";" = ":";
     normal."<leader>" = {
       silent = true;
@@ -141,6 +145,10 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
 
       };
 
+       plugins.telescope.enable = true;
+
+       plugins.fugitive.enable = true;
+
        plugins.treesitter.enable = true;
        plugins.treesitter.incrementalSelection.enable = true;
        plugins.treesitter.ensureInstalled = [
@@ -162,7 +170,6 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
           "yaml"
         ];
     extraPlugins = [
-      pkgs.vimPlugins.vim-fugitive
       pkgs.vimPlugins.vim-vinegar
       pkgs.vimPlugins.vim-commentary
       pkgs.vimPlugins.vimux # "benmills/vimux"
