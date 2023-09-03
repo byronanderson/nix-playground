@@ -149,6 +149,22 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
 
        plugins.fugitive.enable = true;
 
+       plugins.gitsigns = {
+         enable = true;
+
+         onAttach.function = ''
+         function(bufnr)
+           -- if vim.api.nvim_buf_get_name(bufnr):match(<PATTERN>) then
+             -- Don't attach to specific buffers whose name matches a pattern
+             -- return false
+           -- end
+           -- Setup keymaps
+           vim.api.nvim_buf_set_keymap(bufnr, 'n', ']c', '<cmd>lua require"gitsigns".next_hunk()<CR>', {})
+           vim.api.nvim_buf_set_keymap(bufnr, 'n', '[c', '<cmd>lua require"gitsigns".prev_hunk()<CR>', {})
+         end
+         '';
+       };
+
        plugins.treesitter.enable = true;
        plugins.treesitter.incrementalSelection.enable = true;
        plugins.treesitter.ensureInstalled = [
