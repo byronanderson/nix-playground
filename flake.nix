@@ -47,7 +47,7 @@
       devShells = {
         default = pkgs.devshell.mkShell {
           imports = [];
-          packages = [ pkgs.gnumake nvim elixir ];
+          packages = [ pkgs.ripgrep nvim elixir ];
         };
       };
 
