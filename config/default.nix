@@ -69,8 +69,14 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
     # guifont = "monospace:h17";               # the font used in graphical neovim applications
   };
 
-# known working: lua vim.api.nvim_create_autocmd('BufWritePre', { pattern = "<buffer=1>", callback = function() vim.lsp.buf.format({ async = false }) end })
   maps = {
+    # navigating up/down/left/right to other split windows
+    normal."<C-j>" = "<cmd>:wincmd j<cr>";
+    normal."<C-h>" = "<cmd>:wincmd h<cr>";
+    normal."<C-k>" = "<cmd>:wincmd k<cr>";
+    normal."<C-l>" = "<cmd>:wincmd l<cr>";
+
+    # force a format
     normal."<leader>f" = "<cmd>lua vim.lsp.buf.format({ async = false })<cr>";
     normalVisualOp.";" = ":";
     normal."<leader>" = {
