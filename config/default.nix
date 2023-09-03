@@ -70,6 +70,8 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
   };
 
   maps = {
+    insert."jk" = "<Esc>";
+
     # navigating up/down/left/right to other split windows
     normal."<C-j>" = "<cmd>:wincmd j<cr>";
     normal."<C-h>" = "<cmd>:wincmd h<cr>";
