@@ -30,8 +30,6 @@ in
 config = {
   globals.mapleader = " ";
   globals."test#strategy" = "vimux";
-  globals."slime_target" = "tmux";
-globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "target_pane": ":.2"}'';
   colorschemes.onedark.enable = true;
 
   options = {
@@ -187,6 +185,15 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
           "rust"
           "yaml"
         ];
+
+        plugins.vim-slime = {
+          enable = true;
+          target = "tmux";
+          defaultConfig = {
+            socket_name = "default";
+            target_pane = ":.2";
+          };
+        };
     extraPlugins = [
       pkgs.vimPlugins.vim-vinegar
       pkgs.vimPlugins.vim-commentary
@@ -194,7 +201,6 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
       pkgs.vimPlugins.vim-test # "janko/vim-test"
       pkgs.vimPlugins.vim-tmux-navigator # christoomey/vim-tmux-navigator
       colorschemes
-      pkgs.vimPlugins.vim-slime # jpalardy/vim-slime
       pkgs.vimPlugins.nvim-ts-context-commentstring # JoosepAlviste/nvim-ts-context-commentstring
       darkplus
     ];
