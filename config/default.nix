@@ -1,4 +1,27 @@
-pkgs: {
+pkgs: 
+
+let
+  colorschemes = pkgs.vimUtils.buildVimPluginFrom2Nix {
+    name = "colorschemes";
+    src = pkgs.fetchFromGitHub {
+      owner = "lunarvim";
+      repo = "colorschemes";
+      rev = "e29f32990d6e2c7c3a4763326194fbd847b49dac";
+      hash = "sha256-HBgaXKiVXgBl3G879Hvz1F45KD4/25oR3SXeGHaN/xE=";
+    };
+  };
+  darkplus = pkgs.vimUtils.buildVimPluginFrom2Nix {
+    name = "darkplus";
+    src = pkgs.fetchFromGitHub {
+      owner = "lunarvim";
+      repo = "darkplus.nvim";
+      rev = "7c236649f0617809db05cd30fb10fed7fb01b83b";
+      hash = "sha256-qnQfhMXbIY40axjxLc4qv+6bUcjA2zC0iHgeIiNjQ1c=";
+    };
+  };
+in
+
+{
   # Import all your configuration modules here
   imports = [
     ./bufferline.nix
@@ -6,9 +29,13 @@ pkgs: {
 
 config = {
   globals.mapleader = " ";
+  globals."test#strategy" = "vimux";
+  globals."slime_target" = "tmux";
+globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "target_pane": ":.2"}'';
+  colorschemes.onedark.enable = true;
 
   options = {
-    # -- clipboard = "unnamedplus",               -- allows neovim to access the system clipboard
+    clipboard = "unnamedplus";               # allows neovim to access the system clipboard
     cmdheight = 2;                           # more space in the neovim command line for displaying messages
     fileencoding = "utf-8";                  # the encoding written to a file
     hlsearch = true;                         # highlight all matches on previous search pattern
@@ -42,21 +69,43 @@ config = {
     # guifont = "monospace:h17";               # the font used in graphical neovim applications
   };
 
+# known working: lua vim.api.nvim_create_autocmd('BufWritePre', { pattern = "<buffer=1>", callback = function() vim.lsp.buf.format({ async = false }) end })
   maps = {
-      normalVisualOp.";" = ":";
-      normal."<leader>" = {
-        silent = true;
-        action = "<Nop>";
-      };
-      normal."<leader>m" = {
-        # silent = true;
-        action = "<cmd>echo 'hi'<CR>";
-      };
-      normal."<leader>h" = {
-        # silent = true;
-        action = "<cmd>set nohlsearch<CR>";
-      };
+    normal."<leader>f" = "<cmd>lua vim.lsp.buf.format({ async = false })<cr>";
+    normalVisualOp.";" = ":";
+    normal."<leader>" = {
+      silent = true;
+      action = "<Nop>";
     };
+    normal."<leader>h" = {
+      # silent = true;
+      action = "<cmd>set nohlsearch<CR>";
+    };
+    normal."<C-t><C-n>" = {
+      silent = true;
+      action = "<cmd>:wa <bar> TestNearest<CR>";
+    };
+    normal."<C-t><C-f>" = {
+      silent = true;
+      action = "<cmd>:wa <bar> TestFile<CR>";
+    };
+    normal."<C-t><C-s>" = {
+      silent = true;
+      action = "<cmd>:wa <bar> TestSuite<CR>";
+    };
+    normal."<C-t><C-l>" = {
+      silent = true;
+      action = "<cmd>:wa <bar> TestLast<CR>";
+    };
+    normal."<C-t><C-t>" = {
+      silent = true;
+      action = "<cmd>:wa <bar> TestLast<CR>";
+    };
+    normal."<C-t><C-g>" = {
+      silent = true;
+      action = "<cmd>:wa <bar> TestVisit<CR>";
+    };
+  };
 
   plugins.null-ls = {
     enable = true;
@@ -68,11 +117,28 @@ config = {
   plugins.lsp = {
         enable = true;
         servers.elixirls.enable = true;
+        servers.nixd.enable = true;
+
+        keymaps = {
+          silent = false;
+          lspBuf = {
+            "gd" = "definition";
+            "gD" = "references";
+            # "gt" = "type_definition";
+            "gi" = "implementation";
+            "K" = "hover";
+          };
+        };
+
+        onAttach = ''
+        '';
+
       };
 
        plugins.treesitter.enable = true;
+       plugins.treesitter.incrementalSelection.enable = true;
        plugins.treesitter.ensureInstalled = [
-       "elixir"
+         "elixir"
           "bash"
           "cpp"
           "css"
@@ -92,7 +158,24 @@ config = {
     extraPlugins = [
       pkgs.vimPlugins.vim-fugitive
       pkgs.vimPlugins.vim-vinegar
+      pkgs.vimPlugins.vim-commentary
+      pkgs.vimPlugins.vimux # "benmills/vimux"
+      pkgs.vimPlugins.vim-test # "janko/vim-test"
+      pkgs.vimPlugins.vim-tmux-navigator # christoomey/vim-tmux-navigator
+      colorschemes
+      pkgs.vimPlugins.vim-slime # jpalardy/vim-slime
+      pkgs.vimPlugins.nvim-ts-context-commentstring # JoosepAlviste/nvim-ts-context-commentstring
+      darkplus
     ];
+    extraConfigVim = ''
+     augroup _lsp
+       autocmd!
+       autocmd BufWritePre * lua vim.lsp.buf.format({ async = false })
+     augroup end
+
+     set autoread
+     au FocusGained * checktime
+    '';
 };
 
 
