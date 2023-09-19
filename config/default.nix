@@ -89,7 +89,7 @@ config = {
     };
     normal."<leader>h" = {
       # silent = true;
-      action = "<cmd>set nohlsearch<CR>";
+      action = "<cmd>noh<CR>";
     };
     normal."<C-t><C-n>" = {
       silent = true;
