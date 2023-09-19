@@ -126,6 +126,7 @@ config = {
 
   plugins.lsp = {
         enable = true;
+        servers.denols.enable = true;
         servers.elixirls.enable = true;
         servers.nixd.enable = true;
 
@@ -170,6 +171,7 @@ config = {
        plugins.treesitter.enable = true;
        plugins.treesitter.incrementalSelection.enable = true;
        plugins.treesitter.ensureInstalled = [
+         "typescript"
          "elixir"
           "bash"
           "cpp"
