@@ -47,7 +47,12 @@
       devShells = {
         default = pkgs.devshell.mkShell {
           imports = [];
-          packages = [ pkgs.ripgrep nvim elixir ];
+          packages = [
+            pkgs.ripgrep
+            nvim
+            elixir
+            pkgs.deno
+          ];
         };
       };
 
