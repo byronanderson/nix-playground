@@ -115,6 +115,30 @@ config = {
       silent = true;
       action = "<cmd>:wa <bar> TestVisit<CR>";
     };
+    normal."gl" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.open_float()<CR>";
+    };
+    normal."[d" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_prev({ border = 'rounded' })<CR>";
+    };
+    normal."]d" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_next({ border = 'rounded' })<CR>";
+    };
+    normal."[e" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_prev({ border = 'rounded', severity = vim.diagnostic.severity.ERROR })<CR>";
+    };
+    normal."]e" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_next({ border = 'rounded', severity = vim.diagnostic.severity.ERROR})<CR>";
+    };
+    normal."<leader>q" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.setloclist()<CR>";
+    };
   };
 
   plugins.null-ls = {
