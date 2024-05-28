@@ -30,8 +30,8 @@ in
 config = {
   globals.mapleader = " ";
   globals."test#strategy" = "vimux";
-  globals."slime_target" = "tmux";
-globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "target_pane": ":.2"}'';
+  # globals."slime_target" = "tmux";
+# globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "target_pane": ":.2"}'';
   colorschemes.onedark.enable = true;
 
   options = {
@@ -117,7 +117,53 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
       silent = true;
       action = "<cmd>:wa <bar> TestVisit<CR>";
     };
+    normal."gl" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.open_float()<CR>";
+    };
+    normal."[d" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_prev({ border = 'rounded' })<CR>";
+    };
+    normal."]d" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_next({ border = 'rounded' })<CR>";
+    };
+    normal."[e" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_prev({ border = 'rounded', severity = vim.diagnostic.severity.ERROR })<CR>";
+    };
+    normal."]e" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.goto_next({ border = 'rounded', severity = vim.diagnostic.severity.ERROR})<CR>";
+    };
+    normal."<leader>q" = {
+      silent = true;
+      action = "<cmd>lua vim.diagnostic.setloclist()<CR>";
+    };
+
   };
+
+   plugins.luasnip.enable = true;
+
+   plugins.nvim-cmp = {
+     enable = true;
+     snippet.expand = "luasnip";
+     sources = [
+       {
+         name = "nvim_lsp";
+       }
+       {
+         name = "buffer";
+       }
+       {
+         name = "luasnip";
+       }
+       {
+         name = "path";
+       }
+     ];
+   };
 
   plugins.null-ls = {
     enable = true;
@@ -130,6 +176,8 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
         enable = true;
         servers.elixirls.enable = true;
         servers.nixd.enable = true;
+        servers.java-language-server.enable = true;
+        servers.denols.enable = true;
 
         keymaps = {
           silent = false;
@@ -146,6 +194,10 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
         '';
 
       };
+
+        plugins.which-key = {
+          enable = true;
+        };
 
        plugins.telescope.enable = true;
 
@@ -181,12 +233,22 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
           "latex"
           "lua"
           "make"
+          "markdown"
           "nix"
           "python"
           "regex"
           "rust"
           "yaml"
         ];
+      plugins.vim-slime = {
+        enable = true;
+        target = "tmux";
+        defaultConfig = {
+          socket_name = "default";
+          target_pane = ":.2";
+        };
+      };
+
     extraPlugins = [
       pkgs.vimPlugins.vim-vinegar
       pkgs.vimPlugins.vim-commentary
@@ -194,7 +256,7 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
       pkgs.vimPlugins.vim-test # "janko/vim-test"
       pkgs.vimPlugins.vim-tmux-navigator # christoomey/vim-tmux-navigator
       colorschemes
-      pkgs.vimPlugins.vim-slime # jpalardy/vim-slime
+      # pkgs.vimPlugins.vim-slime # jpalardy/vim-slime
       pkgs.vimPlugins.nvim-ts-context-commentstring # JoosepAlviste/nvim-ts-context-commentstring
       darkplus
     ];
@@ -207,6 +269,126 @@ globals.slime_default_config = ''{"socket_name": get(split($TMUX, ","), 0), "tar
      set autoread
      au FocusGained * checktime
     '';
+    extraConfigLua = ''
+      local mappings = {
+        ["b"] = {
+          "<cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_dropdown{previewer = false})<cr>",
+          "Buffers",
+        },
+        ["e"] = { "<cmd>NvimTreeToggle<cr>", "Explorer" },
+        ["w"] = { "<cmd>wa!<CR>", "Save" },
+        ["q"] = { "<cmd>q!<CR>", "Quit" },
+        ["c"] = { "<cmd>Bdelete!<CR>", "Close Buffer" },
+        ["h"] = { "<cmd>nohlsearch<CR>", "No Highlight" },
+        ["f"] = {
+          "<cmd>lua require('telescope.builtin').git_files(require('telescope.themes').get_dropdown())<cr>",
+          "Find files",
+        },
+        ["F"] = { "<cmd>Telescope live_grep theme=ivy<cr>", "Find Text" },
+        ["P"] = { "<cmd>lua require('telescope').extensions.projects.projects()<cr>", "Projects" },
+        ["C"] = { "<cmd>:NewColor<CR>", "Random Colorscheme" },
+        ["\""] = { "<cmd>Telescope registers<cr>", "Registers" },
+
+        p = {
+          name = "Packer",
+          c = { "<cmd>PackerCompile<cr>", "Compile" },
+          i = { "<cmd>PackerInstall<cr>", "Install" },
+          s = { "<cmd>PackerSync<cr>", "Sync" },
+          S = { "<cmd>PackerStatus<cr>", "Status" },
+          u = { "<cmd>PackerUpdate<cr>", "Update" },
+        },
+
+        g = {
+          name = "Git",
+          g = { "<cmd>lua _LAZYGIT_TOGGLE()<CR>", "Lazygit" },
+          j = { "<cmd>lua require 'gitsigns'.next_hunk()<cr>", "Next Hunk" },
+          k = { "<cmd>lua require 'gitsigns'.prev_hunk()<cr>", "Prev Hunk" },
+          l = { "<cmd>lua require 'gitsigns'.blame_line()<cr>", "Blame" },
+          p = { "<cmd>lua require 'gitsigns'.preview_hunk()<cr>", "Preview Hunk" },
+          r = { "<cmd>lua require 'gitsigns'.reset_hunk()<cr>", "Reset Hunk" },
+          R = { "<cmd>lua require 'gitsigns'.reset_buffer()<cr>", "Reset Buffer" },
+          s = { "<cmd>lua require 'gitsigns'.stage_hunk()<cr>", "Stage Hunk" },
+          u = {
+            "<cmd>lua require 'gitsigns'.undo_stage_hunk()<cr>",
+            "Undo Stage Hunk",
+          },
+          o = { "<cmd>Telescope git_status<cr>", "Open changed file" },
+          b = { "<cmd>Telescope git_branches<cr>", "Checkout branch" },
+          c = { "<cmd>Telescope git_commits<cr>", "Checkout commit" },
+          d = {
+            "<cmd>Gitsigns diffthis HEAD<cr>",
+            "Diff",
+          },
+        },
+
+        l = {
+          name = "LSP",
+          a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Code Action" },
+          d = {
+            "<cmd>Telescope diagnostics<cr>",
+            "Diagnostics",
+          },
+          w = {
+            "<cmd>Telescope lsp_workspace_diagnostics<cr>",
+            "Workspace Diagnostics",
+          },
+          f = { "<cmd>lua vim.lsp.buf.formatting()<cr>", "Format" },
+          i = { "<cmd>LspInfo<cr>", "Info" },
+          I = { "<cmd>LspInstallInfo<cr>", "Installer Info" },
+          j = {
+            "<cmd>lua vim.lsp.diagnostic.goto_next()<CR>",
+            "Next Diagnostic",
+          },
+          k = {
+            "<cmd>lua vim.lsp.diagnostic.goto_prev()<cr>",
+            "Prev Diagnostic",
+          },
+          l = { "<cmd>lua vim.lsp.codelens.run()<cr>", "CodeLens Action" },
+          q = { "<cmd>lua vim.lsp.diagnostic.set_loclist()<cr>", "Quickfix" },
+          R = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
+          r = { "<cmd>Telescope lsp_references<cr>", "Find References" },
+          s = { "<cmd>Telescope lsp_document_symbols<cr>", "Document Symbols" },
+          S = {
+            "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>",
+            "Workspace Symbols",
+          },
+        },
+        s = {
+          name = "Search",
+          b = { "<cmd>Telescope git_branches<cr>", "Checkout branch" },
+          c = { "<cmd>Telescope colorscheme<cr>", "Colorscheme" },
+          h = { "<cmd>Telescope help_tags<cr>", "Find Help" },
+          M = { "<cmd>Telescope man_pages<cr>", "Man Pages" },
+          r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
+          R = { "<cmd>Telescope registers<cr>", "Registers" },
+          k = { "<cmd>Telescope keymaps<cr>", "Keymaps" },
+          C = { "<cmd>Telescope commands<cr>", "Commands" },
+        },
+
+        t = {
+          name = "Terminal",
+          n = { "<cmd>lua _NODE_TOGGLE()<cr>", "Node" },
+          u = { "<cmd>lua _NCDU_TOGGLE()<cr>", "NCDU" },
+          t = { "<cmd>lua _HTOP_TOGGLE()<cr>", "Htop" },
+          p = { "<cmd>l a _PYTHON_TOGGLE()<cr>", "Python" },
+          f = { "<cmd>ToggleTerm direction=float<cr>", "Float" },
+          h = { "<cmd>ToggleTerm size=10 direction=horizontal<cr>", "Horizontal" },
+          v = { "<cmd>ToggleTerm size=80 direction=vertical<cr>", "Vertical" },
+        },
+      }
+
+      local opts = {
+        mode = "n", -- NORMAL mode
+        prefix = "<leader>",
+        buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
+        silent = true, -- use `silent` when creating keymaps
+        noremap = true, -- use `noremap` when creating keymaps
+        nowait = true, -- use `nowait` when creating keymaps
+      };
+
+      require("which-key").register(mappings, opts);
+    '';
+
 };
 
 
