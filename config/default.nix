@@ -175,6 +175,9 @@ config = {
   plugins.lsp = {
         enable = true;
         servers.elixirls.enable = true;
+        servers.elixirls.cmd = ["elixir-ls"];
+        servers.elixirls.installLanguageServer = false;
+
         servers.nixd.enable = true;
         servers.java-language-server.enable = true;
         servers.denols.enable = true;
