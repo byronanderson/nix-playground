@@ -2,16 +2,18 @@
   description = "A nixvim configuration";
 
   inputs = {
-    nixvim.url = "github:nix-community/nixvim";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixvim = {
+      url = "github:nix-community/nixvim/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
-    devshell.url = "github:numtide/devshell";
   };
 
   outputs = {
     nixpkgs,
     nixvim,
     flake-utils,
-    devshell,
     ...
   } @ inputs: let
     config = import ./config; # import the module directly
@@ -20,16 +22,14 @@
       nixvimLib = nixvim.lib.${system};
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [
-          devshell.overlays.default
-        ];
       };
       nixvim' = nixvim.legacyPackages.${system};
       nvim = nixvim'.makeNixvimWithModule {
         inherit pkgs;
         module = config pkgs;
       };
-      elixir = pkgs.beam.packages.erlang.elixir;
+      # elixir = pkgs.beam.packages.erlang.elixir_1_18;
+      elixir-ls = pkgs.elixir-ls;
     in {
       checks = {
         # Run `nix flake check .` to verify that your config is not broken
@@ -43,13 +43,8 @@
         # Lets you run `nix run .` to start nixvim
         default = nvim;
         tmux = pkgs.tmux;
-      };
-
-      devShells = {
-        default = pkgs.devshell.mkShell {
-          imports = [];
-          packages = [ pkgs.ripgrep nvim elixir ];
-        };
+        # elixir = elixir;
+        elixir-ls = elixir-ls;
       };
 
     });
