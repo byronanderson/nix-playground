@@ -79,6 +79,7 @@ in
     keymaps = [
       { mode = "i"; key = "jk"; action = "<Esc>"; }
       { mode = "n"; key = "<leader>"; action = "<Nop>"; options.silent = true; }
+      { mode = "n"; key = "<leader>C"; action="<cmd>lua require('random-colorscheme').set()<CR>:colorscheme<cr>"; options.silent = true; }
 
       # navigating up/down/left/right to other split windows
       { mode = "n"; key = "<C-h>"; action = "<cmd>:wincmd h<cr>"; }
@@ -111,10 +112,15 @@ in
       { mode = "n"; key = ";"; action = ":"; }
       { mode = "v"; key = ";"; action = ":"; }
       { mode = "o"; key = ";"; action = ":"; }
+      { mode = "t"; key = "<C-h>"; action = "<C-\\><C-N><C-w>h"; }
+      { mode = "t"; key = "<C-j>"; action = "<C-\\><C-N><C-w>j"; }
+      { mode = "t"; key = "<C-k>"; action = "<C-\\><C-N><C-w>k"; }
+      { mode = "t"; key = "<C-l>"; action = "<C-\\><C-N><C-w>l"; }
     ];
 
     plugins.luasnip.enable = true;
     plugins.bufferline.enable = true;
+    plugins.toggleterm.enable = true;
 
 
 #  plugins.nvim-cmp = {
@@ -254,10 +260,8 @@ in
     '';
 
     extraConfigLua = ''
-      local mappings = {
+      local oldmappings = {
         ["b"] = {
-          "<cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_dropdown{previewer = false})<cr>",
-          "Buffers",
         },
         ["e"] = { "<cmd>NvimTreeToggle<cr>", "Explorer" },
         ["w"] = { "<cmd>wa!<CR>", "Save" },
@@ -295,76 +299,68 @@ in
             "Diff",
           },
         },
-
-        l = {
-          name = "LSP",
-          a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Code Action" },
-          d = {
-            "<cmd>Telescope diagnostics<cr>",
-            "Diagnostics",
-          },
-          w = {
-            "<cmd>Telescope lsp_workspace_diagnostics<cr>",
-            "Workspace Diagnostics",
-          },
-          f = { "<cmd>lua vim.lsp.buf.format({ async = false })<cr>", "Format" },
-          i = { "<cmd>LspInfo<cr>", "Info" },
-          I = { "<cmd>LspInstallInfo<cr>", "Installer Info" },
-          j = {
-            "<cmd>lua vim.lsp.diagnostic.goto_next()<CR>",
-            "Next Diagnostic",
-          },
-          k = {
-            "<cmd>lua vim.lsp.diagnostic.goto_prev()<cr>",
-            "Prev Diagnostic",
-          },
-          l = { "<cmd>lua vim.lsp.codelens.run()<cr>", "CodeLens Action" },
-          q = { "<cmd>lua vim.lsp.diagnostic.set_loclist()<cr>", "Quickfix" },
-          R = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Rename" },
-          r = { "<cmd>Telescope lsp_references<cr>", "Find References" },
-          s = { "<cmd>Telescope lsp_document_symbols<cr>", "Document Symbols" },
-          S = {
-            "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>",
-            "Workspace Symbols",
-          },
-        },
-        s = {
-          name = "Search",
-          b = { "<cmd>Telescope git_branches<cr>", "Checkout branch" },
-          c = { "<cmd>Telescope colorscheme<cr>", "Colorscheme" },
-          h = { "<cmd>Telescope help_tags<cr>", "Find Help" },
-          M = { "<cmd>Telescope man_pages<cr>", "Man Pages" },
-          r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
-          R = { "<cmd>Telescope registers<cr>", "Registers" },
-          k = { "<cmd>Telescope keymaps<cr>", "Keymaps" },
-          C = { "<cmd>Telescope commands<cr>", "Commands" },
-        },
-
-        t = {
-          name = "Terminal",
-          n = { "<cmd>lua _NODE_TOGGLE()<cr>", "Node" },
-          u = { "<cmd>lua _NCDU_TOGGLE()<cr>", "NCDU" },
-          t = { "<cmd>lua _HTOP_TOGGLE()<cr>", "Htop" },
-          p = { "<cmd>l a _PYTHON_TOGGLE()<cr>", "Python" },
-          f = { "<cmd>ToggleTerm direction=float<cr>", "Float" },
-          h = { "<cmd>ToggleTerm size=10 direction=horizontal<cr>", "Horizontal" },
-          v = { "<cmd>ToggleTerm size=80 direction=vertical<cr>", "Vertical" },
-        },
       }
+      require("which-key").add(
+        {
+          { "b", "<cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_dropdown{previewer = false})<cr>", desc = "Buffers" }
+        }
+      )
 
-      local opts = {
-        mode = {"n"}
-      };
+      require("which-key").add(
+        {
+          { "<leader>s", group = "Search" },
+          { "<leader>sb", "<cmd>Telescope git_branches<cr>", desc = "Checkout branch" },
+          { "<leader>sc", "<cmd>Telescope colorscheme<cr>", desc = "Colorscheme" },
+          { "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "Find Help" },
+          { "<leader>sM", "<cmd>Telescope man_pages<cr>", desc = "Man Pages" },
+          { "<leader>sr", "<cmd>Telescope oldfiles<cr>", desc = "Open Recent File" },
+          { "<leader>sR", "<cmd>Telescope registers<cr>", desc = "Registers" },
+          { "<leader>sk", "<cmd>Telescope keymaps<cr>", desc = "Keymaps" },
+          { "<leader>sC", "<cmd>Telescope commands<cr>", desc = "Commands" },
+        },
+        {
+          mode = {"n"}
+        }
+      )
 
-      require("which-key").register(mappings, opts);
+      require("which-key").add(
+        {
+          { "<leader>t", group = "Terminal" },
+          { "<leader>tn", "<cmd>lua _NODE_TOGGLE()<cr>", desc = "Node" },
+          { "<leader>tu", "<cmd>lua _NCDU_TOGGLE()<cr>", desc = "NCDU" },
+          { "<leader>tt", "<cmd>lua _HTOP_TOGGLE()<cr>", desc = "Htop" },
+          { "<leader>tp", "<cmd>l a _PYTHON_TOGGLE()<cr>", desc = "Python" },
+          { "<leader>tf", "<cmd>ToggleTerm direction=float<cr>", desc = "Float" },
+          { "<leader>th", "<cmd>ToggleTerm size=10 direction=horizontal<cr>", desc = "Horizontal" },
+          { "<leader>tv", "<cmd>ToggleTerm size=80 direction=vertical<cr>", desc = "Vertical" },
+        },
+        {
+          mode = {"n"}
+        }
+      )
+      require("which-key").add(
+        {
+          { "<leader>l", group = "LSP" },
+          { "<leader>la", "<cmd>lua vim.lsp.buf.code_action()<cr>", desc = "Code Action" },
+          { "<leader>ld", "<cmd>Telescope diagnostics<cr>", desc = "Diagnostics" },
+          { "<leader>lw", "<cmd>Telescope lsp_workspace_diagnostics<cr>", desc = "Workspace Diagnostics" },
+          { "<leader>lf", "<cmd>lua vim.lsp.buf.format({ async = false })<cr>", desc = "Format" },
+          { "<leader>li", "<cmd>LspInfo<cr>", desc = "Info" },
+          { "<leader>lI", "<cmd>LspInstallInfo<cr>", desc = "Installer Info" },
+          { "<leader>lj", "<cmd>lua vim.lsp.diagnostic.goto_next()<CR>", desc = "Next Diagnostic" },
+          { "<leader>lk", "<cmd>lua vim.lsp.diagnostic.goto_prev()<cr>", desc = "Prev Diagnostic" },
+          { "<leader>ll", "<cmd>lua vim.lsp.codelens.run()<cr>", desc = "CodeLens Action" },
+          { "<leader>lq", "<cmd>lua vim.lsp.diagnostic.set_loclist()<cr>", desc = "Quickfix" },
+          { "<leader>lR", "<cmd>lua vim.lsp.buf.rename()<cr>", desc = "Rename" },
+          { "<leader>lr", "<cmd>Telescope lsp_references<cr>", desc = "Find References" },
+          { "<leader>ls", "<cmd>Telescope lsp_document_symbols<cr>", desc = "Document Symbols" },
+          { "<leader>lS", "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>", desc = "Workspace Symbols" },
+        },
+        {
+          mode = {"n"}
+        }
+      )
     '';
-        # prefix = "<leader>",
-        # buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-        # silent = true, -- use `silent` when creating keymaps
-        # noremap = true, -- use `noremap` when creating keymaps
-        # nowait = true, -- use `nowait` when creating keymaps
-
-
   };
 
   # https://github.com/nix-community/nixvim/issues/97
